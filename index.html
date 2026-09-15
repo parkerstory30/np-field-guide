@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Field Guide</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Field Guide">
+<meta name="theme-color" content="#12241F">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F5F1;
+    --panel:#FFFFFF;
+    --ink:#16211D;
+    --ink-soft:#5B6660;
+    --line:#E1DFD7;
+    --accent:#0F6E63;
+    --accent-ink:#0A4A43;
+    --flag:#8A3B22;
+    --flag-bg:#FBEEE7;
+    --pearl-bg:#EFF2E4;
+    --pearl-line:#C7CFAE;
+
+    --cns:#5B4B8A;
+    --repro:#B3527C;
+    --cardio:#A5342A;
+    --pulm:#2E7D6B;
+    --inflam:#B36A2C;
+    --endo:#8A7A2E;
+    --gi:#3E5FA0;
+    --anti:#3E8A5E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:none;
+  }
+  .app{
+    max-width:460px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  header.topbar{
+    padding:18px 20px 14px;
+    background:var(--bg);
+    position:sticky;
+    top:0;
+    z-index:5;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.01em;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .wordmark span.tag{
+    font-family:-apple-system,sans-serif;
+    font-weight:500;
+    font-size:12px;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:2px 9px;
+  }
+  .wordmark span.tag.cohorttag{
+    cursor:pointer;
+    user-select:none;
+    color:var(--accent-ink);
+    border-color:var(--accent);
+    background:#EAF3F1;
+  }
+  .cohortmenu{
+    position:absolute;
+    right:20px;
+    top:52px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);
+    padding:6px;
+    z-index:20;
+    min-width:180px;
+  }
+  .cohortmenu-item{
+    padding:9px 12px;
+    border-radius:7px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .cohortmenu-item:hover{ background:var(--bg); }
+  .cohortmenu-item.current{ color:var(--accent-ink); }
+  .sampledata{
+    margin-top:8px;
+    font-size:11.5px;
+    color:var(--flag);
+    background:var(--flag-bg);
+    border-radius:8px;
+    padding:6px 10px;
+    line-height:1.4;
+  }
+  .searchwrap{
+    margin-top:12px;
+    position:relative;
+  }
+  .searchwrap input{
+    width:100%;
+    padding:11px 14px 11px 38px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    font-size:15px;
+    color:var(--ink);
+    outline:none;
+  }
+  .searchwrap input:focus{ border-color:var(--accent); }
+  .searchwrap svg{
+    position:absolute;
+    left:12px;
+    top:50%;
+    transform:translateY(-50%);
+    width:16px;
+    height:16px;
+    stroke:var(--ink-soft);
+  }
+  .chips{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:12px 20px 4px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto;
+    font-size:13px;
+    font-weight:600;
+    padding:7px 13px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink-soft);
+    white-space:nowrap;
+    cursor:pointer;
+    user-select:none;
+  }
+  .chip.active{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  main{
+    flex:1;
+    padding:6px 0 90px;
+  }
+  .listcount{
+    padding:10px 20px 2px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .card{
+    display:flex;
+    align-items:center;
+    gap:0;
+    margin:10px 20px 0;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    cursor:pointer;
+  }
+  .card .edge{
+    width:6px;
+    align-self:stretch;
+    flex:0 0 6px;
+  }
+  .card .body{
+    padding:13px 14px;
+    flex:1;
+    min-width:0;
+  }
+  .card .sysname{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    margin-bottom:3px;
+  }
+  .card .drugclass{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:15.5px;
+    margin-bottom:2px;
+  }
+  .card .names{
+    font-size:13px;
+    color:var(--ink-soft);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .card .chev{
+    padding-right:14px;
+    color:var(--ink-soft);
+    flex:0 0 auto;
+  }
+  .card:active{ background:#FAFAF7; }
+
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:60px 30px;
+    font-size:14px;
+  }
+
+  /* Detail view */
+  .detail{
+    padding:0 0 100px;
+  }
+  .detail-hero{
+    padding:16px 20px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .backrow{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:var(--accent-ink);
+    font-weight:600;
+    font-size:14px;
+    margin-bottom:14px;
+    cursor:pointer;
+    width:fit-content;
+  }
+  .backrow svg{width:16px;height:16px;stroke:var(--accent-ink);}
+  .detail-sys{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    padding:4px 10px;
+    border-radius:20px;
+    color:#fff;
+    margin-bottom:10px;
+  }
+  .detail-class{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:23px;
+    line-height:1.15;
+    margin-bottom:6px;
+  }
+  .detail-names{
+    font-size:15px;
+    color:var(--ink-soft);
+  }
+  .bookmark-btn{
+    position:absolute;
+    right:20px;
+    top:18px;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--panel);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .bookmark-btn svg{width:16px;height:16px;stroke:var(--ink-soft);fill:none;}
+  .bookmark-btn.saved svg{fill:var(--accent);stroke:var(--accent);}
+
+  .section{
+    padding:16px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .section h3{
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+  .section p{
+    margin:0;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .dosebox{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-0.01em;
+  }
+  .flagbox{
+    background:var(--flag-bg);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--flag);
+    font-size:14.5px;
+    line-height:1.5;
+  }
+  .pearlbox{
+    background:var(--pearl-bg);
+    border:1px solid var(--pearl-line);
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:14.5px;
+    line-height:1.55;
+    font-style:italic;
+  }
+  .pearlbox::before{
+    content:"Clinical Pearl";
+    display:block;
+    font-style:normal;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.02em;
+    color:var(--accent-ink);
+    margin-bottom:6px;
+  }
+  .sourceline{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  /* Pearl of the day view */
+  .pearlday{
+    padding:24px 20px 100px;
+  }
+  .pearlday .eyebrow{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .pearlday .card-big{
+    background:var(--pearl-bg);
+    border:1px solid var(--pearl-line);
+    border-radius:16px;
+    padding:22px;
+  }
+  .pearlday .card-big .quote{
+    font-size:19px;
+    line-height:1.45;
+    font-style:italic;
+    margin-bottom:16px;
+  }
+  .pearlday .card-big .who{
+    font-size:13px;
+    color:var(--ink-soft);
+    font-style:normal;
+  }
+  .pearlday .refresh{
+    margin-top:18px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:var(--accent-ink);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  /* Saved view */
+  .savedhead{
+    padding:20px 20px 4px;
+  }
+  .savedhead h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:20px;
+    margin:0;
+  }
+
+  nav.bottomnav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    display:flex;
+    justify-content:center;
+    z-index:10;
+  }
+  nav.bottomnav .inner{
+    max-width:460px;
+    width:100%;
+    display:flex;
+    background:var(--panel);
+    border-top:1px solid var(--line);
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .navbtn{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:600;
+    padding:6px 0;
+    cursor:pointer;
+  }
+  .navbtn svg{width:20px;height:20px;stroke:var(--ink-soft);fill:none;}
+  .navbtn.active{ color:var(--accent-ink); }
+  .navbtn.active svg{ stroke:var(--accent-ink); }
+
+  .badge{
+    display:inline-block;
+    min-width:15px;
+    height:15px;
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    font-size:10px;
+    line-height:15px;
+    text-align:center;
+    padding:0 4px;
+    margin-left:4px;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// COHORT REGISTRY — add one entry per cohort, forever. Never delete old ones.
+//
+// Each cohort = one tab in your Google Sheet, published separately:
+// File > Share > Publish to web > select that TAB > CSV > Publish > copy link.
+//
+// "key" is what goes in the shareable URL, e.g.:
+//   yourapp.com/index.html?cohort=spring2027
+// Hand that exact link to that cohort at the end of their semester — they
+// bookmark/Add to Home Screen from that URL, and it always opens straight
+// to their guide.
+// ---------------------------------------------------------------------------
+const COHORTS = {
+  spring2027: { label: "Spring 2027", dataUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQPbQU48ys8XgPuvnp8FfFZ1P1voHHt_x0hZ7ACDH6GH3ROGr11TSu_KB06tJ_e1ZW1F1d8PfmIYBhl/pub?gid=314770171&single=true&output=csv" },
+  fall2027:   { label: "Fall 2027",   dataUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQPbQU48ys8XgPuvnp8FfFZ1P1voHHt_x0hZ7ACDH6GH3ROGr11TSu_KB06tJ_e1ZW1F1d8PfmIYBhl/pub?gid=2060763223&single=true&output=csv" },
+  // 
+};
+const DEFAULT_COHORT_KEY = "spring2027"; // shown when no ?cohort= param is present
+
+function getCohortKeyFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const requested = params.get("cohort");
+  return (requested && COHORTS[requested]) ? requested : DEFAULT_COHORT_KEY;
+}
+
+const SYSTEMS = {
+  cns:      { label: "Central Nervous System", color: "var(--cns)"    },
+  repro:    { label: "Reproductive",            color: "var(--repro)"  },
+  cardio:   { label: "Cardiovascular",          color: "var(--cardio)" },
+  pulm:     { label: "Pulmonary",               color: "var(--pulm)"   },
+  inflam:   { label: "Inflammation",            color: "var(--inflam)" },
+  endo:     { label: "Endocrine",               color: "var(--endo)"   },
+  gi:       { label: "Gastrointestinal",        color: "var(--gi)"     },
+  anti:     { label: "Anti-Infective",          color: "var(--anti)"   },
+  unknown:  { label: "Uncategorized",           color: "var(--ink-soft)" },
+};
+
+let MEDS = [];
+let state = { tab:"browse", query:"", filter:"all", detailId:null, saved: new Set(), loadStatus:"loading", cohortKey: getCohortKeyFromUrl(), cohortPickerOpen:false };
+
+function matchSystemKey(label){
+  if(!label) return "unknown";
+  const norm = label.trim().toLowerCase();
+  for(const [key, s] of Object.entries(SYSTEMS)){
+    if(s.label.toLowerCase() === norm) return key;
+  }
+  for(const [key, s] of Object.entries(SYSTEMS)){
+    if(norm.includes(s.label.toLowerCase().split(" ")[0])) return key;
+  }
+  return "unknown";
+}
+
+// Matches spreadsheet columns to fields by required keywords, ignoring case,
+// spacing, and punctuation — so it doesn't matter exactly how a Form's
+// question titles are worded, as long as the key words are present.
+const FIELD_MATCHERS = {
+  system:      ["system"],
+  drugClass:   ["drug", "class"],
+  generic:     ["generic", "name"],
+  brand:       ["brand", "name"],
+  moa:         ["mechanism", "action"],
+  indication:  ["indication"],
+  dose:        ["dose"],
+  contra:      ["contraindication"],
+  side:        ["side", "effect"],
+  pearl:       ["pearl"],
+  source:      ["source"],
+  submittedBy: ["submitted"],
+};
+
+function normalizeKey(k){
+  return k.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function buildFieldMap(sampleRow){
+  const headers = Object.keys(sampleRow).map(k => ({ original: k, norm: normalizeKey(k) }));
+  const map = {};
+  for(const [field, required] of Object.entries(FIELD_MATCHERS)){
+    const match = headers.find(h => required.every(tok => h.norm.includes(tok)));
+    map[field] = match ? match.original : null;
+  }
+  return map;
+}
+
+function rowsToMeds(rows){
+  if(!rows.length) return [];
+  const fm = buildFieldMap(rows[0]);
+  const get = (r, field) => (fm[field] ? (r[fm[field]] || "") : "").trim();
+  return rows.map((r, i) => ({
+    id: i + 1,
+    sys: matchSystemKey(get(r, "system")),
+    drugClass: get(r, "drugClass"),
+    generic: get(r, "generic"),
+    brand: get(r, "brand"),
+    moa: get(r, "moa"),
+    indication: get(r, "indication"),
+    dose: get(r, "dose"),
+    contra: get(r, "contra"),
+    side: get(r, "side"),
+    pearl: get(r, "pearl"),
+    source: get(r, "source"),
+    submittedBy: get(r, "submittedBy"),
+  })).filter(m => m.drugClass || m.generic);
+}
+
+function loadData(){
+  state.loadStatus = "loading";
+  render();
+  const cohort = COHORTS[state.cohortKey];
+  Papa.parse(cohort.dataUrl, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      MEDS = rowsToMeds(results.data);
+      state.loadStatus = MEDS.length ? "ready" : "empty";
+      render();
+    },
+    error: () => {
+      state.loadStatus = "error";
+      render();
+    },
+  });
+}
+
+function switchCohort(key){
+  if(!COHORTS[key]) return;
+  state.cohortKey = key;
+  state.cohortPickerOpen = false;
+  state.detailId = null;
+  state.saved = new Set();
+  const url = new URL(window.location.href);
+  url.searchParams.set("cohort", key);
+  window.history.replaceState({}, "", url);
+  loadData();
+}
+
+
+function wordmarkHtml(){
+  const cohort = COHORTS[state.cohortKey];
+  return `
+    <div class="wordmark" style="position:relative;">
+      Field Guide
+      <span class="tag cohorttag" id="cohortTagBtn">${cohort ? cohort.label : "Select cohort"} \u25be</span>
+      ${state.cohortPickerOpen ? cohortMenuHtml() : ''}
+    </div>
+  `;
+}
+
+function cohortMenuHtml(){
+  return `
+    <div class="cohortmenu" id="cohortMenu">
+      ${Object.entries(COHORTS).map(([key, c]) => `
+        <div class="cohortmenu-item ${key===state.cohortKey?'current':''}" data-cohort="${key}">${c.label}${key===state.cohortKey?' \u2713':''}</div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function iconSearch(){ return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`; }
+function iconBack(){ return `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`; }
+function iconChev(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>`; }
+function iconBookmark(){ return `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>`; }
+function iconGrid(){ return `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`; }
+function iconStar(){ return `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.63 22 9.24 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.24 8.91 8.63 12 2"/></svg>`; }
+
+function renderLoading(){
+  return `
+    <header class="topbar">${wordmarkHtml()}</header>
+    <div class="empty" style="padding-top:80px;">Loading this year's field guide…</div>
+  `;
+}
+
+function renderError(){
+  return `
+    <header class="topbar">${wordmarkHtml()}</header>
+    <div class="empty" style="padding-top:60px;">
+      Couldn't load the field guide data right now.<br>Check your connection and try again.
+      <div style="margin-top:16px;">
+        <span class="chip active" id="retryBtn" style="display:inline-block;">Retry</span>
+      </div>
+    </div>
+  `;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.loadStatus === "loading"){ app.innerHTML = renderLoading(); return; }
+  if(state.loadStatus === "error"){ app.innerHTML = renderError(); bindRetry(); return; }
+  app.innerHTML = `
+    ${state.detailId ? renderDetail() : renderMain()}
+    ${renderNav()}
+  `;
+  bindEvents();
+}
+
+function bindRetry(){
+  const btn = document.getElementById('retryBtn');
+  if(btn) btn.addEventListener('click', loadData);
+}
+
+function renderMain(){
+  if(state.tab === "pearl") return renderPearl();
+  if(state.tab === "saved") return renderSaved();
+  return renderBrowse();
+}
+
+function renderBrowse(){
+  const filtered = MEDS.filter(m=>{
+    const matchesFilter = state.filter === "all" || m.sys === state.filter;
+    const q = state.query.trim().toLowerCase();
+    const matchesQuery = !q || m.generic.toLowerCase().includes(q) || m.brand.toLowerCase().includes(q) || m.drugClass.toLowerCase().includes(q);
+    return matchesFilter && matchesQuery;
+  });
+  return `
+    <header class="topbar">
+      ${wordmarkHtml()}
+      <div class="sampledata">Sample data for prototype review \u2014 not verified clinical content.</div>
+      <div class="searchwrap">
+        ${iconSearch()}
+        <input id="searchInput" type="text" placeholder="Search drug, class, or brand" value="${escapeAttr(state.query)}">
+      </div>
+    </header>
+    <div class="chips">
+      <div class="chip ${state.filter==='all'?'active':''}" data-filter="all">All Systems</div>
+      ${Object.entries(SYSTEMS).map(([key,s])=>`<div class="chip ${state.filter===key?'active':''}" data-filter="${key}">${s.label}</div>`).join('')}
+    </div>
+    <main>
+      <div class="listcount">${filtered.length} medication${filtered.length!==1?'s':''}</div>
+      ${filtered.length ? filtered.map(cardHtml).join('') : `<div class="empty">No matches. Try a different search or filter.</div>`}
+    </main>
+  `;
+}
+
+function cardHtml(m){
+  const sys = SYSTEMS[m.sys];
+  return `
+    <div class="card" data-id="${m.id}">
+      <div class="edge" style="background:${sys.color}"></div>
+      <div class="body">
+        <div class="sysname" style="color:${sys.color}">${sys.label.toUpperCase()}</div>
+        <div class="drugclass">${m.drugClass}</div>
+        <div class="names">${m.generic} \u00b7 ${m.brand}</div>
+      </div>
+      <div class="chev">${iconChev()}</div>
+    </div>
+  `;
+}
+
+function renderDetail(){
+  const m = MEDS.find(x=>x.id===state.detailId);
+  const sys = SYSTEMS[m.sys];
+  const isSaved = state.saved.has(m.id);
+  return `
+    <div class="detail">
+      <div class="detail-hero" style="position:relative;">
+        <div class="backrow" id="backBtn">${iconBack()} Back</div>
+        <div class="bookmark-btn ${isSaved?'saved':''}" id="bookmarkBtn">${iconBookmark()}</div>
+        <div class="detail-sys" style="background:${sys.color}">${sys.label}</div>
+        <div class="detail-class">${m.drugClass}</div>
+        <div class="detail-names">${m.generic} <span style="color:var(--line)">\u2022</span> ${m.brand}</div>
+      </div>
+      <div class="section"><h3>Mechanism of Action</h3><p>${m.moa}</p></div>
+      <div class="section"><h3>Indication(s)</h3><p>${m.indication}</p></div>
+      <div class="section"><h3>Dose</h3><p class="dosebox">${m.dose}</p></div>
+      <div class="section"><h3>Contraindications</h3><div class="flagbox">${m.contra}</div></div>
+      <div class="section"><h3>Side Effects / Monitoring</h3><p>${m.side}</p></div>
+      <div class="section"><div class="pearlbox">${m.pearl}</div></div>
+      <div class="section" style="border-bottom:none;"><div class="sourceline">Sourced entry \u2014 group-authored, cited per project sourcing standard.</div></div>
+    </div>
+  `;
+}
+
+function renderPearl(){
+  if(!MEDS.length){
+    return `
+      <header class="topbar">${wordmarkHtml()}</header>
+      <div class="empty" style="padding-top:60px;">No entries loaded yet.</div>
+    `;
+  }
+  const day = Math.floor(Date.now() / 86400000);
+  const m = MEDS[day % MEDS.length];
+  const sys = SYSTEMS[m.sys];
+  return `
+    <header class="topbar">${wordmarkHtml()}</header>
+    <div class="pearlday">
+      <div class="eyebrow">Today's Clinical Pearl</div>
+      <div class="card-big">
+        <div class="quote">\u201c${m.pearl}\u201d</div>
+        <div class="who" style="color:${sys.color}; font-weight:600;">${m.drugClass} \u2014 ${m.generic}</div>
+      </div>
+      <div class="refresh" id="pearlJump">View full entry ${iconChev()}</div>
+    </div>
+  `;
+}
+
+function renderSaved(){
+  const items = MEDS.filter(m=>state.saved.has(m.id));
+  return `
+    <header class="topbar">${wordmarkHtml()}</header>
+    <div class="savedhead"><h2>Saved</h2></div>
+    <main>
+      <div class="listcount">${items.length} saved medication${items.length!==1?'s':''}</div>
+      ${items.length ? items.map(cardHtml).join('') : `<div class="empty">Nothing saved yet. Tap the bookmark icon on any entry to keep it handy here.</div>`}
+    </main>
+  `;
+}
+
+function renderNav(){
+  return `
+    <nav class="bottomnav"><div class="inner">
+      <div class="navbtn ${state.tab==='browse'&&!state.detailId?'active':''}" data-tab="browse">${iconGrid()}<span>Browse</span></div>
+      <div class="navbtn ${state.tab==='pearl'&&!state.detailId?'active':''}" data-tab="pearl">${iconStar()}<span>Pearl</span></div>
+      <div class="navbtn ${state.tab==='saved'&&!state.detailId?'active':''}" data-tab="saved">${iconBookmark()}<span>Saved${state.saved.size?`<span class="badge">${state.saved.size}</span>`:''}</span></div>
+    </div></nav>
+  `;
+}
+
+function escapeAttr(s){ return s.replace(/"/g,'&quot;'); }
+
+function bindEvents(){
+  const cohortBtn = document.getElementById('cohortTagBtn');
+  if(cohortBtn){
+    cohortBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      state.cohortPickerOpen = !state.cohortPickerOpen;
+      render();
+    });
+  }
+  document.querySelectorAll('.cohortmenu-item').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); switchCohort(el.dataset.cohort); });
+  });
+  if(state.cohortPickerOpen){
+    document.addEventListener('click', closeCohortMenuOnce, { once:true });
+  }
+  const search = document.getElementById('searchInput');
+  if(search){
+    search.addEventListener('input', e=>{ state.query = e.target.value; render(); preserveFocus(search.id); });
+  }
+  document.querySelectorAll('.chip').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.filter = el.dataset.filter; render(); });
+  });
+  document.querySelectorAll('.card').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.detailId = parseInt(el.dataset.id); render(); window.scrollTo(0,0); });
+  });
+  document.querySelectorAll('.navbtn').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.tab = el.dataset.tab; state.detailId = null; render(); window.scrollTo(0,0); });
+  });
+  const back = document.getElementById('backBtn');
+  if(back) back.addEventListener('click', ()=>{ state.detailId = null; render(); });
+  const bm = document.getElementById('bookmarkBtn');
+  if(bm) bm.addEventListener('click', ()=>{
+    if(state.saved.has(state.detailId)) state.saved.delete(state.detailId);
+    else state.saved.add(state.detailId);
+    render();
+  });
+  const pearlJump = document.getElementById('pearlJump');
+  if(pearlJump) pearlJump.addEventListener('click', ()=>{
+    if(!MEDS.length) return;
+    const day = Math.floor(Date.now() / 86400000);
+    const m = MEDS[day % MEDS.length];
+    state.detailId = m.id;
+    render();
+  });
+}
+
+function closeCohortMenuOnce(){
+  if(state.cohortPickerOpen){ state.cohortPickerOpen = false; render(); }
+}
+
+function preserveFocus(id){
+  const el = document.getElementById(id);
+  if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+}
+
+loadData();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* offline install requires real hosting */ });
+  });
+}
+</script>
+</body>
+</html>
