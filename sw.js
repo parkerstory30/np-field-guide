@@ -1,10 +1,11 @@
 // Basic offline cache for the Field Guide PWA.
-// Two different strategies on purpose:
-// - App shell files (this page, manifest) rarely change: cache-first is fine.
-// - The Google Sheet data changes often: network-first, so edits show up
-//   immediately when online, falling back to the last cached copy only
-//   when there's no connection (genuine offline use in the field).
-const CACHE_NAME = "field-guide-v2";
+// Deliberately simple: only the static app shell (this page, manifest) is
+// cached here. The Google Sheet data is left completely alone — no
+// interception, no caching layer — so it's always a plain, direct fetch.
+// The app's own "Couldn't load, try again" screen handles any real network
+// failure; that's simpler and more reliable than trying to manage data
+// freshness inside the service worker.
+const CACHE_NAME = "field-guide-v3";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -20,6 +21,7 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
+  self.clients.claim();
 });
 
 function isDataRequest(url){
@@ -29,17 +31,9 @@ function isDataRequest(url){
 self.addEventListener("fetch", (event) => {
   const url = event.request.url;
 
+  // Data requests: don't intercept at all. Let the browser handle it
+  // completely natively, every time.
   if (isDataRequest(url)) {
-    // Network-first: always try for fresh data; fall back to cache if offline.
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
     return;
   }
 
